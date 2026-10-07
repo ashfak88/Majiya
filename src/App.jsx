@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from 'react'
+import { Fragment, useEffect, useState, useRef } from 'react'
 import Credit from './components/Credit'
 import Petals from './components/Petals'
 
@@ -42,26 +42,7 @@ export default function App() {
   const [opening, setOpening] = useState(false)
   const [cardsIn, setCardsIn] = useState(false)
   const [dot, setDot] = useState('0px')
-  const [player, setPlayer] = useState(null)
-
-  useEffect(() => {
-    if (!window.YT) {
-      const tag = document.createElement('script')
-      tag.src = 'https://www.youtube.com/iframe_api'
-      const firstScriptTag = document.getElementsByTagName('script')[0]
-      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag)
-      
-      window.onYouTubeIframeAPIReady = () => {
-        new window.YT.Player('yt-player', {
-          height: '0',
-          width: '0',
-          videoId: 'ivrumxRUz_Y',
-          playerVars: { 'playsinline': 1, 'loop': 1, 'playlist': 'ivrumxRUz_Y' },
-          events: { 'onReady': (e) => setPlayer(e.target) }
-        })
-      }
-    }
-  }, [])
+  const audioRef = useRef(null)
 
   useEffect(() => {
     const el = document.getElementById('dress-code-cards')
@@ -93,10 +74,18 @@ export default function App() {
 
   const openGate = () => { 
     setOpening(true); 
-    if (player && typeof player.playVideo === 'function') {
-      player.playVideo();
+    if (audioRef.current) {
+      audioRef.current.currentTime = 3;
+      audioRef.current.play().catch(e => console.error("Audio playback failed:", e));
     }
     setTimeout(() => setGate(false), 1000);
+  }
+
+  const handleAudioEnded = () => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = 3;
+      audioRef.current.play().catch(e => console.error("Audio playback failed:", e));
+    }
   }
   const submit = (e) => {
     e.preventDefault()
@@ -114,7 +103,7 @@ export default function App() {
 
   return (
     <div className="relative min-h-screen">
-      <div id="yt-player" className="hidden absolute w-0 h-0" />
+      <audio ref={audioRef} src="/song.mpeg" preload="auto" className="hidden" onEnded={handleAudioEnded} />
       <Petals />
       {/* Royal Opening Curtain / Gate */}
       {gate && (

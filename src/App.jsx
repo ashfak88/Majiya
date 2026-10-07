@@ -42,6 +42,26 @@ export default function App() {
   const [opening, setOpening] = useState(false)
   const [cardsIn, setCardsIn] = useState(false)
   const [dot, setDot] = useState('0px')
+  const [player, setPlayer] = useState(null)
+
+  useEffect(() => {
+    if (!window.YT) {
+      const tag = document.createElement('script')
+      tag.src = 'https://www.youtube.com/iframe_api'
+      const firstScriptTag = document.getElementsByTagName('script')[0]
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag)
+      
+      window.onYouTubeIframeAPIReady = () => {
+        new window.YT.Player('yt-player', {
+          height: '0',
+          width: '0',
+          videoId: 'ivrumxRUz_Y',
+          playerVars: { 'playsinline': 1, 'loop': 1, 'playlist': 'ivrumxRUz_Y' },
+          events: { 'onReady': (e) => setPlayer(e.target) }
+        })
+      }
+    }
+  }, [])
 
   useEffect(() => {
     const el = document.getElementById('dress-code-cards')
@@ -71,7 +91,13 @@ export default function App() {
     return () => clearInterval(id)
   }, [])
 
-  const openGate = () => { setOpening(true); setTimeout(() => setGate(false), 1000) }
+  const openGate = () => { 
+    setOpening(true); 
+    if (player && typeof player.playVideo === 'function') {
+      player.playVideo();
+    }
+    setTimeout(() => setGate(false), 1000);
+  }
   const submit = (e) => {
     e.preventDefault()
     setSent(true)
@@ -88,6 +114,7 @@ export default function App() {
 
   return (
     <div className="relative min-h-screen">
+      <div id="yt-player" className="hidden absolute w-0 h-0" />
       <Petals />
       {/* Royal Opening Curtain / Gate */}
       {gate && (
@@ -125,13 +152,13 @@ export default function App() {
         style={{ WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 95%, transparent 100%)', maskImage: 'linear-gradient(to bottom, black 0%, black 95%, transparent 100%)' }}
       >
         <img
-          src="/images/hero_invitation_card.jpg"
+          src="/images/hero_invitation_card.jpg.jpeg"
           alt=""
           aria-hidden="true"
           className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-30 scale-110 pointer-events-none"
         />
         <img
-          src="/images/hero_invitation_card.jpg"
+          src="/images/hero_invitation_card.jpg.jpeg"
           alt="Nashiruddin &amp; Majiya - Wedding Invitation"
           className="relative z-10 w-full h-full object-contain mx-auto select-none drop-shadow-2xl"
         />
@@ -237,31 +264,55 @@ export default function App() {
       {/* Both Wedding Venues with Maps */}
       <section className="bg-[#f0f0f0] py-24 text-center relative overflow-hidden" id="venue">
         <div className="max-w-5xl mx-auto space-y-12 px-6 relative z-20">
-          <div className="grid grid-cols-1 gap-12 text-center">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-center">
             {/* Nikah Venue Card */}
-            <div className="bg-white max-w-sm mx-auto w-full shadow-md flex flex-col items-center pt-10 pb-12 overflow-hidden">
-              <h3 className="font-script text-5xl text-[#b51221] mb-6">Location</h3>
-              <h4 className="font-display-lg text-3xl text-[#1f2937] mb-3 px-4">Eidga Shadi Mahal</h4>
-              <p className="font-body-lg text-[#4b5563] text-lg italic px-4">Near Aman School,</p>
-              <p className="font-body-lg text-[#4b5563] text-lg italic px-4">Railway Station Road, Gadag</p>
-              
-              <div className="w-full relative mt-8 mb-8 flex justify-center">
-                <img 
-                  src="/images/venue_sketch.png" 
-                  alt="Venue Sketch" 
-                  className="w-full h-auto object-cover opacity-90 scale-105"
-                  style={{ WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)', maskImage: 'linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)' }}
-                />
+            <div className="bg-white max-w-sm mx-auto w-full shadow-md flex flex-col items-center justify-between pt-10 pb-12 overflow-hidden h-full">
+              <div className="w-full">
+                <h3 className="font-script text-4xl text-[#b51221] mb-4">Nikah Ceremony</h3>
+                <div className="mb-6 space-y-1">
+                  <p className="font-display-lg text-[#1f2937] text-xl font-semibold">17th Oct 2026</p>
+                  <p className="font-display-lg text-[#b51221] text-lg font-semibold">12:00 PM</p>
+                </div>
+                <h4 className="font-display-lg text-2xl text-[#1f2937] mb-3 px-4">Eidga Shadi Mahal</h4>
+                <p className="font-body-lg text-[#4b5563] text-lg italic px-4">Near Aman School,</p>
+                <p className="font-body-lg text-[#4b5563] text-lg italic px-4">Railway Station Road, Gadag</p>
               </div>
 
-              <a
-                href={GADAG_MAP_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-3/4 mx-auto text-center inline-block bg-[#aa111f] text-white px-6 py-3.5 font-body-sm text-sm tracking-[0.2em] shadow hover:bg-[#8f0e1a] transition-colors uppercase font-semibold cursor-pointer"
-              >
-                GET DIRECTIONS
-              </a>
+              <div className="w-full mt-10">
+                <a
+                  href={GADAG_MAP_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-3/4 mx-auto text-center inline-block bg-[#aa111f] text-white px-6 py-3.5 font-body-sm text-sm tracking-[0.2em] shadow hover:bg-[#8f0e1a] transition-colors uppercase font-semibold cursor-pointer"
+                >
+                  GET DIRECTIONS
+                </a>
+              </div>
+            </div>
+
+            {/* Walima Venue Card */}
+            <div className="bg-white max-w-sm mx-auto w-full shadow-md flex flex-col items-center justify-between pt-10 pb-12 overflow-hidden h-full">
+              <div className="w-full">
+                <h3 className="font-script text-4xl text-[#b51221] mb-4">Dawat-E-Walima</h3>
+                <div className="mb-6 space-y-1">
+                  <p className="font-display-lg text-[#1f2937] text-xl font-semibold">18th Oct 2026</p>
+                  <p className="font-display-lg text-[#b51221] text-lg font-semibold">01:00 PM</p>
+                </div>
+                <h4 className="font-display-lg text-2xl text-[#1f2937] mb-3 px-4">Anjuman Shadi Mahal</h4>
+                <p className="font-body-lg text-[#4b5563] text-lg italic px-4">Near Court circle,</p>
+                <p className="font-body-lg text-[#4b5563] text-lg italic px-4">Kundgol</p>
+              </div>
+
+              <div className="w-full mt-10">
+                <a
+                  href={KUNDGOL_MAP_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-3/4 mx-auto text-center inline-block bg-[#aa111f] text-white px-6 py-3.5 font-body-sm text-sm tracking-[0.2em] shadow hover:bg-[#8f0e1a] transition-colors uppercase font-semibold cursor-pointer"
+                >
+                  GET DIRECTIONS
+                </a>
+              </div>
             </div>
           </div>
         </div>
